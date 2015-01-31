@@ -1,6 +1,6 @@
 from GraphDescription import GraphDescription
 from GraphDescriptionElement import networkx_graph_init
-import csv, glob
+import csv, glob, os
 
 
 class GraphContext:
@@ -43,7 +43,7 @@ class GraphContext:
         so that it works from here
         """
         self.table = []
-        for filename in glob.glob(input_address + "*"):
+        for filename in glob.glob(os.path.join(input_address,"*")):
             self.obj_num += 1
             node_labels, edges = [], []
             f = open(filename,'r')

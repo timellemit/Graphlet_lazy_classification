@@ -13,6 +13,7 @@ class GraphDescriptionElement(nx.Graph):
         self.build_graphlets = build_graphlets
         if self.build_graphlets:
             self.graphlets = self.all_graphlets(min_nodes, max_nodes)
+            print "Graphlets", self.graphlets
             
             
     def is_connected(self):
@@ -145,7 +146,7 @@ def networkx_graph_init(node_labels, edges):
         graph.node[i]['label'] = node_labels[i]
     return graph       
 
-def graphlet_descriptions(desc_set, training_set, 
+def graphlet_descs(desc_set, training_set, 
                               min_nodes, max_nodes):
         def node_match(n1,n2):
             return n1['label'] == n2['label']
@@ -206,5 +207,5 @@ if __name__ == "__main__":
 #     is_subgraph(mol6, min_nodes=3, max_nodes=3)
 #     for gr in mol5.graphlet_iter(3):
 #         print gr.node
-    print graphlet_descriptions(train_set[:4], train_set,
+    print graphlet_descs(train_set[:4], train_set,
                                 3,3)

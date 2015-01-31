@@ -1,7 +1,11 @@
 from GraphContext import GraphContext
 from time import time
 # from sklearn import metrics
-from GraphDescriptionElement import graphlet_descriptions
+from GraphDescriptionElement import graphlet_descs
+from graph.GraphDescription import graphlet_descriptions
+from parse_PTC_2001_data.parse_PTC_train_labels import select_labels
+import os
+import numpy as np
 
 class GraphClassify:  
     
@@ -14,31 +18,38 @@ class GraphClassify:
                 build_graphlets=build_graphlets, 
                 min_nodes=min_nodes, max_nodes=max_nodes, ptc=ptc)
         self.context = GraphContext
-        self.build_graphlets = build_graphlets
+        self.build_graphlets, self.min_nodes, self.max_nodes, self.ptc = \
+        build_graphlets, min_nodes, max_nodes, ptc
     
-    def svm_graphlet_classify(self, test_cxt_file, min_nodes, max_nodes):
-        train_desc_vectors = graphlet_descriptions(
-                            map(lambda descriptions: [desc[0] for desc in descriptions],
-                            self.positive_cxt.table + 
-                            self.negative_cxt.table),
-                            map(lambda descriptions: [desc[0] for desc in descriptions],
-                            self.positive_cxt.table + 
-                            self.negative_cxt.table),
-                            min_nodes, max_nodes)[1]
-                                                   
-                                                   
-#         pos_examples + neg_examples, min_nodes)[1]
-#     test_desc_vectors = graphlet_descriptions(test_examples, 
-#         pos_examples + neg_examples, min_nodes)[1]                                        
-#     X_train, X_test = np.array(train_desc_vectors), np.array(test_desc_vectors)
-#     Y = np.array([1,1,1,1,-1,-1,-1])
+    def graphlet_train_test(self, test_dir, labels_filename,
+                            grouptype):
+        self.test_cxt = self.context(test_dir, self.build_graphlets, 
+                                     self.min_nodes, self.max_nodes, self.ptc)
+        train_set = graphlet_descriptions(desc_set=self.positive_cxt.table + 
+                                          self.negative_cxt.table,
+                                          training_set=self.positive_cxt.table + 
+                                          self.negative_cxt.table, 
+                                          min_nodes=self.min_nodes, 
+                                          max_nodes=self.max_nodes)[1]
+        test_set = graphlet_descriptions(self.test_cxt.table, 
+                                         training_set=self.positive_cxt.table + 
+                                          self.negative_cxt.table,
+                                          min_nodes=self.min_nodes, 
+                                          max_nodes=self.max_nodes)[1]
+        train_labels = np.array([1]*len(self.positive_cxt.table) +
+                                [0]*len(self.positive_cxt.table)) 
+        test_labels = select_labels(test_dir, labels_filename, grouptype)
+        return train_set, test_set, train_labels, test_labels
         
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
-                      min_nodes=1, max_nodes=100000, verbose=False,
+                      min_nodes=1, max_nodes=100000, 
+                      weighted=False,
+                      verbose=False,
                       ptc=False):
         def test_intersections(train_context, opposite_context,
                                test_object, use_graphlets,
-                               min_nodes, max_nodes, verbose):
+                               min_nodes, max_nodes, 
+                               weighted, verbose):
             vote_num = 0
             for train_object in train_context.table:
                 intersection = train_object.intersect(test_object, use_graphlets,
@@ -48,7 +59,9 @@ class GraphClassify:
                         object_set=opposite_context.table,
                         use_graphlets=use_graphlets,
                         min_nodes=min_nodes, max_nodes=max_nodes):
-                    vote_num += 1
+                    
+                    vote_num += (len(intersection) if weighted else 1)
+                    
                 if verbose:
                     print "Intersection of " + test_object.__str__() + " and " + \
                     train_object.__str__() + " = " + intersection.__str__()
@@ -72,24 +85,29 @@ class GraphClassify:
                                            test_object=test_object, 
                                            use_graphlets=use_graphlets,
                                            min_nodes=min_nodes,
-                                           max_nodes=max_nodes, verbose=verbose)
+                                           max_nodes=max_nodes, 
+                                           weighted=weighted,
+                                           verbose=verbose)
             neg_votes = test_intersections(train_context=self.negative_cxt, 
                                            opposite_context=self.positive_cxt, 
                                            use_graphlets=use_graphlets,
                                            test_object=test_object, 
                                            min_nodes=min_nodes,
-                                           max_nodes=max_nodes, verbose=verbose)
+                                           max_nodes=max_nodes, 
+                                           weighted=weighted,
+                                           verbose=verbose)
             if pos_votes == neg_votes:
                 labels.append(-1)
             else:
                 labels.append(int(pos_votes > neg_votes))
+            if verbose:
+                print "Score: ", pos_votes, ":", neg_votes
         if verbose:
-            print "Score: ", pos_votes, ":", neg_votes
+            print "Classification time in sec: ", round(time() - init_time, 2)
             class_labels = {1: "positive", 0: "negative", -1: "undefined"}
             for i in xrange(len(self.test_cxt.obj_names)):
                 print "Example " + self.test_cxt.obj_names[i] + \
-                " is classified as " + class_labels[labels[i]]
-            print "time in sec: ", round(time() - init_time, 2)
+                    " is classified as " + class_labels[labels[i]]
         return labels
     
     def intersection_covers_example_from_set(self, intersection, object_set,
@@ -124,7 +142,9 @@ if __name__ == "__main__":
                           build_graphlets=True, min_nodes=3, max_nodes=3, ptc=True) 
     predicted = molecules.lazy_classify("../../input/PTC_toy_sample/test/",
                         use_graphlets=True,
-                         min_nodes=3, max_nodes=3, ptc=True, verbose=True)
+                         min_nodes=3, max_nodes=3, 
+                         weighted = True,
+                         ptc=True, verbose=True)
     expected = [0,1,0,1,0,1]
 #     molecules = GraphClassify("../../input/PTC_medium_sample/positive/",
 #                           "../../input/PTC_medium_sample/negative/", 

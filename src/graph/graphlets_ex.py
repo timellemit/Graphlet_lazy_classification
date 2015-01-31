@@ -1,5 +1,4 @@
 import networkx as nx
-from GraphDescriptionElement import GraphDescriptionElement
 
 g = nx.Graph()
 g.add_edge(1,2);g.add_edge(1,3)

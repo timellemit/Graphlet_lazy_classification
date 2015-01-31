@@ -4,6 +4,7 @@ from time import time
 """
 multiple graphs in one element
 """
+from graph.GraphDescriptionElement import graphlet_descs
 class GraphDescription:
     def __init__(self, graphs, build_graphlets=False, 
                  min_nodes=1, max_nodes=100000):
@@ -58,7 +59,7 @@ class GraphDescription:
 #                         print "time in sec: ", round(time() - init_time, 2)
                     return False
         return True
-    
+
     def __str__(self):
         s = "<"
         for elem in self.value:
@@ -71,6 +72,14 @@ class GraphDescription:
     
     def __len__(self):
         return len(self.value)
+    
+def graphlet_descriptions(desc_set, training_set, 
+                         min_nodes, max_nodes):
+    return graphlet_descs([elem for description in desc_set
+                           for elem in description.value],
+                          [elem for description in training_set
+                           for elem in description.value], 
+                         min_nodes, max_nodes) 
             
 if __name__ == "__main__": 
     molecule_structure = [(0, 2, {'type' : 1}), (1, 2, {'type' : 1}), 
