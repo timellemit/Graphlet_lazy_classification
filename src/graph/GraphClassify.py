@@ -34,9 +34,6 @@ class GraphClassify:
         if verbose:
             print "All graphlets time: ", round(time() - init_time, 2)
         return graphlets
-                            
-                
-
     
     def graphlet_train_test(self, test_dir, labels_filename,
                             grouptype, 
@@ -184,7 +181,9 @@ class GraphClassify:
                 inter = binary_intersect(test_obj,pos_obj)
                 for neg_obj in neg_set:
                     if not inter_matches(inter, neg_obj):
+#                         print type(inter),sum(inter != -1)
                         pos_votes += sum(inter != -1)
+#                         print pos_votes
             for neg_obj in neg_set:
                 inter = binary_intersect(test_obj, neg_obj)
                 for pos_obj in pos_set:
