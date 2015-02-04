@@ -6,26 +6,25 @@ import os
 
 def test_lazy_classification(input_address, pos_dir, neg_dir, test_dir,
                              grouptype,
-                             labels_filename="training_set_results.txt",
+                             labels_filename,
                              use_graphlets=True, min_nodes=3, max_nodes=3,
                              weighted=False,
                              parse_ptc=True, verbose=True):
     init_time = time()
-    test_dir_address = os.path.join(input_address, test_dir)
-    molecules = GraphClassify(pos_cxt_file=os.path.join(input_address,pos_dir),
-                              neg_cxt_file=os.path.join(input_address,neg_dir),
+    molecules = GraphClassify(pos_cxt_file=pos_dir,
+                              neg_cxt_file=neg_dir,
                               build_graphlets=use_graphlets, 
                               min_nodes=min_nodes, max_nodes=max_nodes, ptc=parse_ptc) 
-    predicted = molecules.lazy_classify(test_cxt_file=test_dir_address,
+    predicted = molecules.lazy_classify(test_cxt_file=test_dir,
                                         use_graphlets=use_graphlets,
                                         min_nodes=min_nodes, max_nodes=max_nodes,
                                         weighted=weighted, 
                                         ptc=parse_ptc, verbose=verbose)
     expected = select_labels(
-        test_address=test_dir_address, 
-        label_file_address=os.path.join(input_address,labels_filename), 
+        test_address=test_dir, 
+        label_file_address=labels_filename, 
         grouptype=grouptype)
-    print "Classification time in sec: ", round(time() - init_time, 2) 
+    print "Lazy classification time in sec: ", round(time() - init_time, 2) 
     return np.array(expected), np.array(predicted)
 
 def accuracy_with_refusal(expected, predicted, verbose=True):
@@ -51,20 +50,20 @@ if __name__ == "__main__":
     test_dir = os.path.join(os.path.join(input_address,"PTC_toy_sample_4x4x4"),
                         "MR_test")
     labels_filename = os.path.join(input_address,"training_set_results.txt")
-    exp, pred = test_lazy_classification(
+    true_labels, pred_labels = test_lazy_classification(
         input_address=input_address,
         pos_dir=pos_dir,
         neg_dir=neg_dir,
         test_dir=test_dir,
         grouptype="MR",
         labels_filename=labels_filename)
-#     print exp, pred
+#     print true_labels, pred_labels
     
-#     exp, pred = test_lazy_classification(
+#     true_labels, pred_labels = test_lazy_classification(
 #         input_address="C:\\Users\\User\\Documents\\eclipse_workspace\\graphlet_lazy\\input\\",
 #         pos_dir="PTC_training_set\\MR_positive",
 #         neg_dir="PTC_training_set\MR_negative",
 #         test_dir="PTC_training_set\MR_test",
 #         labels_filename="training_set_results.txt")
-    accuracy_with_refusal(exp, pred)
+    accuracy_with_refusal(true_labels, pred_labels)
     

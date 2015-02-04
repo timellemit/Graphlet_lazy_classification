@@ -1,21 +1,25 @@
 from GraphDescription import GraphDescription
 from GraphDescriptionElement import networkx_graph_init
 import csv, glob, os
+from time import time
 
 
 class GraphContext:
     
-    def __init__(self, data_file_address, build_graphlets=False, 
-                 min_nodes=1, max_nodes=100000, ptc=False):
+    def __init__(self, data_file_address, build_graphlets=True, 
+                 min_nodes=3, max_nodes=3, ptc=False, verbose=False):
         self.obj_num, self.attr_num = 0, 0
         self.obj_names = []
         self.table = []
         self.parsePTCData(input_address=data_file_address, 
                           build_graphlets=build_graphlets, 
-                 min_nodes=min_nodes, max_nodes=max_nodes) \
+                 min_nodes=min_nodes, max_nodes=max_nodes,
+                 verbose=verbose) \
         if ptc else self.parseData(data_file_address=data_file_address, 
                           build_graphlets=build_graphlets, 
-                 min_nodes=min_nodes, max_nodes=max_nodes)
+                 min_nodes=min_nodes, max_nodes=max_nodes,
+                 verbose=verbose)
+            
         
         
     def parseData(self, data_file_address, build_graphlets=False, 
@@ -42,6 +46,7 @@ class GraphContext:
         TODO: modify input_address + filename
         so that it works from here
         """
+        init_time = time()
         self.table = []
         for filename in glob.glob(os.path.join(input_address,"*")):
             self.obj_num += 1
@@ -54,10 +59,10 @@ class GraphContext:
 #             if node_num < 35:
             self.obj_names.append(filename[len(input_address):] + "_" +
                                   str(node_num) +"x" + str(edge_num))
-            for node_id in xrange(node_num):
+            for node_id in xrange(node_num):  # @UnusedVariable
                 lb = f.readline().split()[3]
                 node_labels.append(lb)
-            for edge_id in xrange(edge_num):
+            for edge_id in xrange(edge_num):  # @UnusedVariable
                 [edge_from_id, edge_to_id, edge_type] = \
                 [int(val)-1 for val in f.readline().split()[:3]]
                 edge_dic = {}
@@ -69,6 +74,8 @@ class GraphContext:
             if verbose:
                 print filename
                 print "{} nodes, {} edges.".format(node_num, edge_num)
+        if verbose:
+            print "parsing time: ", round(time() - init_time, 2)
           
 if __name__ == "__main__":
 #     context = GraphContext("../../input/toy_molecules_positive.csv",

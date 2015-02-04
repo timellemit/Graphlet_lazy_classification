@@ -3,17 +3,19 @@ from test_lazy_classify import test_lazy_classification,\
 import os
 
 input_address = os.path.join(os.path.join(os.pardir, os.pardir), "input")
-    
-exp, pred = test_lazy_classification(
+labels_filename = os.path.join(input_address, "training_set_results.txt")
+sample_adress = os.path.join(input_address, "PTC_sample_44x44x44")
+
+true_labels, pred_labels = test_lazy_classification(
         input_address=input_address,
-        pos_dir=os.path.join("PTC_sample_44x44x44","MR_positive"),
-        neg_dir=os.path.join("PTC_sample_44x44x44","MR_negative"),
-        test_dir=os.path.join("PTC_sample_44x44x44","MR_test"),
-        labels_filename="training_set_results.txt",
+        pos_dir=os.path.join(sample_adress,"MR_positive"),
+        neg_dir=os.path.join(sample_adress,"MR_negative"),
+        test_dir=os.path.join(sample_adress,"MR_test"),
+        labels_filename=labels_filename,
         grouptype="MR",
         weighted=True,
         verbose=True)
 
-print "Expected", exp
-print "Predicted", pred
-print accuracy_with_refusal(exp, pred, verbose=True)
+print "Expected", true_labels
+print "Predicted", pred_labels
+print accuracy_with_refusal(true_labels, pred_labels, verbose=False)

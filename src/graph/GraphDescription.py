@@ -48,15 +48,12 @@ class GraphDescription:
         if use_graphlets and not self.build_graphlets:
             Warning("Graphlets were not built")
             use_graphlets = False
-        init_time = time()
         for graph_ind in xrange(len(self.value)):
             for other_graph_ind in xrange(len(other.value)):
                 if not self.value[graph_ind].\
                     is_subgraph(other.value[other_graph_ind], 
                                 use_graphlets,
                                 min_nodes, max_nodes):
-#                     if verbose:
-#                         print "time in sec: ", round(time() - init_time, 2)
                     return False
         return True
 
@@ -73,13 +70,21 @@ class GraphDescription:
     def __len__(self):
         return len(self.value)
     
-def graphlet_descriptions(desc_set, training_set, 
-                         min_nodes, max_nodes):
+def graphlet_descriptions(desc_set, training_set,
+                          use_own_graphlets=False, 
+                          graphlets=None,
+                          min_nodes=3, max_nodes=3,
+                          verbose=False):
     return graphlet_descs([elem for description in desc_set
                            for elem in description.value],
                           [elem for description in training_set
-                           for elem in description.value], 
-                         min_nodes, max_nodes) 
+                           for elem in description.value],
+                          use_own_graphlets=use_own_graphlets,
+                          graphlets=graphlets,
+                          min_nodes=min_nodes, 
+                          max_nodes=max_nodes,
+                          verbose=verbose
+                          ) 
             
 if __name__ == "__main__": 
     molecule_structure = [(0, 2, {'type' : 1}), (1, 2, {'type' : 1}), 

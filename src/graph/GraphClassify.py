@@ -1,48 +1,141 @@
+# -*- coding: utf-8 -*-
 from GraphContext import GraphContext
 from time import time
-# from sklearn import metrics
-from GraphDescriptionElement import graphlet_descs
-from graph.GraphDescription import graphlet_descriptions
 from parse_PTC_2001_data.parse_PTC_train_labels import select_labels
-import os
 import numpy as np
+from parse_PTC_2001_data.parse_binary_graphlet_descriptions import parse_graphlet_descriptions
+from sklearn import svm, metrics
 
 class GraphClassify:  
     
-    def __init__(self, pos_cxt_file, neg_cxt_file, build_graphlets=False, 
-                 min_nodes=3, max_nodes=3, ptc=False):
+    def __init__(self, pos_cxt_file, neg_cxt_file, build_graphlets=True, 
+                 min_nodes=3, max_nodes=3, ptc=False, verbose=False):
         self.positive_cxt = GraphContext(pos_cxt_file, 
                 build_graphlets=build_graphlets, 
-                min_nodes=min_nodes, max_nodes=max_nodes, ptc=ptc)
+                min_nodes=min_nodes, max_nodes=max_nodes, ptc=ptc,
+                verbose=verbose)
         self.negative_cxt = GraphContext(neg_cxt_file, 
                 build_graphlets=build_graphlets, 
-                min_nodes=min_nodes, max_nodes=max_nodes, ptc=ptc)
+                min_nodes=min_nodes, max_nodes=max_nodes, ptc=ptc,
+                verbose=verbose)
         self.context = GraphContext
         self.build_graphlets, self.min_nodes, self.max_nodes, self.ptc = \
         build_graphlets, min_nodes, max_nodes, ptc
     
+    def all_train_graphlets(self, min_nodes=3, max_nodes=3, verbose=False):
+        init_time = time()
+        graphlets = []
+        for desc in self.positive_cxt.table + self.negative_cxt.table:
+            for elem in desc.value:
+                for n_nodes in xrange(max_nodes, min_nodes - 1, -1):
+                    for graphlet in elem.graphlet_iter(n_nodes):
+                        if graphlet.unique_graphlet(graphlets):
+                            graphlets.append(graphlet)
+        if verbose:
+            print "All graphlets time: ", round(time() - init_time, 2)
+        return graphlets
+                            
+                
+
+    
     def graphlet_train_test(self, test_dir, labels_filename,
-                            grouptype):
-        self.test_cxt = self.context(test_dir, self.build_graphlets, 
-                                     self.min_nodes, self.max_nodes, self.ptc)
-        train_set = graphlet_descriptions(desc_set=self.positive_cxt.table + 
-                                          self.negative_cxt.table,
-                                          training_set=self.positive_cxt.table + 
-                                          self.negative_cxt.table, 
-                                          min_nodes=self.min_nodes, 
-                                          max_nodes=self.max_nodes)[1]
-        test_set = graphlet_descriptions(self.test_cxt.table, 
-                                         training_set=self.positive_cxt.table + 
-                                          self.negative_cxt.table,
-                                          min_nodes=self.min_nodes, 
-                                          max_nodes=self.max_nodes)[1]
-        train_labels = np.array([1]*len(self.positive_cxt.table) +
-                                [0]*len(self.positive_cxt.table)) 
-        test_labels = select_labels(test_dir, labels_filename, grouptype)
+                            grouptype, 
+                            fromfile=True,
+                            tofile=False, train_filename=None,
+                            test_filename=None,
+                            train_labels_filename=None,
+                            test_labels_filename=None,
+                            verbose=False):
+        init_time = time()
+        self.test_cxt = self.context(data_file_address=test_dir,
+                                      build_graphlets=self.build_graphlets,
+                                     min_nodes=self.min_nodes, 
+                                     max_nodes=self.max_nodes, ptc=self.ptc,
+                                     verbose=verbose)
+        if fromfile:
+            train_set, test_set, train_labels, test_labels = \
+            parse_graphlet_descriptions(
+                                train_filename, 
+                                test_filename,
+                                train_labels_filename,
+                                test_labels_filename)
+        else:
+            graphlets = []
+            train_length = len(self.positive_cxt.table + 
+                             self.negative_cxt.table)
+            train_test_length = train_length + len(self.test_cxt.table)
+            all_graph_elems = [elem for desc in self.positive_cxt.table + 
+                             self.negative_cxt.table + self.test_cxt.table
+                              for elem in desc.value]
+#             all_graph_elems = self.positive_cxt.table + \
+#                              self.negative_cxt.table + self.test_cxt.table
+            binary_descriptions = []#np.array([])
+            for train_desc in self.positive_cxt.table + self.positive_cxt.table:
+                for elem in train_desc.value:
+                    for n_nodes in xrange(self.max_nodes, self.min_nodes - 1, -1):
+                        for graphlet in elem.graphlet_iter(n_nodes):
+                            if graphlet.unique_graphlet(graphlets):
+                                graphlets.append(graphlet)
+                                for test_elem in all_graph_elems:
+                                    value = int(graphlet.is_subgraph(test_elem,
+                                            use_graphlets=True))
+                                    binary_descriptions.append(value)
+            binary_descriptions = np.array(binary_descriptions).reshape([len(graphlets),
+                                                                train_test_length]).T   
+            train_set, test_set = binary_descriptions[:train_length,:], \
+                                  binary_descriptions[train_length:,:]
+            train_labels = np.array([1]*len(self.positive_cxt.table) +
+                                    [0]*len(self.negative_cxt.table)) 
+            test_labels = select_labels(test_dir, labels_filename, grouptype)
+            if tofile:
+                np.savetxt(train_filename,train_set,fmt='%d',delimiter=',')
+                np.savetxt(test_filename,test_set,fmt='%d',delimiter=',') 
+                np.savetxt(train_labels_filename,train_labels,fmt='%d',delimiter=',') 
+                np.savetxt(test_labels_filename,test_labels,fmt='%d',delimiter=',') 
+            if verbose:
+                print graphlets
+                print "Graphlet description time in sec: ", round(time() - init_time, 2) 
         return train_set, test_set, train_labels, test_labels
-        
+    
+    def svm_graphlet_classify(self, test_dir, labels_filename,
+                              grouptype="MR",
+                              descs_from_file=True,
+                              train_filename=None,
+                              test_filename=None,
+                              train_labels_filename=None,
+                              test_labels_filename=None,
+                              descs_to_file=False,
+                              verbose=True):
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        train_set, test_set, train_labels, test_labels = \
+        self.graphlet_train_test(test_dir, 
+                              labels_filename,
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              grouptype=grouptype,
+                              train_filename=train_filename,
+                              test_filename=test_filename,
+                              train_labels_filename=train_labels_filename,
+                              test_labels_filename=test_labels_filename,
+                              verbose=verbose)   
+#         print "Train set descs\n", train_set
+#         print "Test set descs\n", test_set
+        clf = svm.SVC(kernel='linear')
+        clf.fit(train_set, train_labels)
+        predicted =  clf.predict(test_set)
+        if verbose:
+            print "True: ", test_labels
+            print "Predicted: ", predicted
+            print(metrics.classification_report(test_labels, predicted))
+            print(metrics.confusion_matrix(test_labels, predicted)) 
+            print "Classification time in sec: ", round(time() - init_time, 2)
+        return predicted
+    
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
-                      min_nodes=1, max_nodes=100000, 
+                      min_nodes=3, max_nodes=3, 
                       weighted=False,
                       verbose=False,
                       ptc=False):

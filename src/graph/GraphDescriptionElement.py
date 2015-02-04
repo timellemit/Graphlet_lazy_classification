@@ -8,12 +8,13 @@ from time import time
 
 class GraphDescriptionElement(nx.Graph):
     def __init__(self, graph, build_graphlets=False, 
-                 min_nodes=1, max_nodes=1000000):
+                 min_nodes=3, max_nodes=3,verbose=False):
         self.graph = graph
         self.build_graphlets = build_graphlets
         if self.build_graphlets:
             self.graphlets = self.all_graphlets(min_nodes, max_nodes)
-            print "Graphlets", self.graphlets
+            if verbose:
+                print "Graphlets", self.graphlets
             
             
     def is_connected(self):
@@ -29,7 +30,7 @@ class GraphDescriptionElement(nx.Graph):
                                     edge_match = edge_match)
     
     def is_subgraph(self, other, use_graphlets=False,
-                    min_nodes=1, max_nodes=1000000):
+                    min_nodes=3, max_nodes=3):
         meet  = self.meet(other, use_graphlets, min_nodes, max_nodes)
 #         print "is_subgraph", meet
         if len(meet) == 1:
@@ -53,10 +54,12 @@ class GraphDescriptionElement(nx.Graph):
             all_graphlets.extend(self.all_k_graphlets(n_nodes))  
         return  all_graphlets  
                                      
-    def graphlet_iter(self, k_nodes):
+    def graphlet_iter(self, k_nodes, build_graphlets=True,verbose=False):
         for node_subset in combinations(self.graph.nodes(), k_nodes):
 #             print node_subset
-            subgraph = GraphDescriptionElement(self.graph.subgraph(node_subset))
+            subgraph = GraphDescriptionElement(self.graph.subgraph(node_subset),
+                                               build_graphlets,
+                                               verbose=verbose)
             if subgraph.is_connected():
                 yield subgraph
     
@@ -67,7 +70,7 @@ class GraphDescriptionElement(nx.Graph):
             return True
         
     def meet(self, other, use_graphlets=False, 
-             min_nodes=1, max_nodes=1000000, 
+             min_nodes=3, max_nodes=3, 
              verbose=False):
         init_time = time()
         meet = []
@@ -86,8 +89,8 @@ class GraphDescriptionElement(nx.Graph):
                         if gr1.is_isomorphic(gr2):
                             if gr1.unique_graphlet(meet):
                                     meet.append(gr1)
-#         if verbose:
-#             print "meet time in sec: ", round(time() - init_time, 2)
+        if verbose:
+            print "meet time in sec: ", round(time() - init_time, 2)
         if meet:
             return meet
         return []
@@ -147,36 +150,34 @@ def networkx_graph_init(node_labels, edges):
     return graph       
 
 def graphlet_descs(desc_set, training_set, 
-                              min_nodes, max_nodes):
+                   use_own_graphlets=True,
+                   graphlets=None,
+                   min_nodes=3, max_nodes=3,
+                   verbose=False):
         def node_match(n1,n2):
             return n1['label'] == n2['label']
         def edge_match(e1,e2):
             return e1['type'] == e2['type']
-        
-        graphlets = []
-        for n_nodes in xrange(max_nodes, min_nodes - 1, -1):
-            for example_ind in xrange(len(training_set)):
-                for example_subgraph in training_set[example_ind].\
-                graphlet_iter(n_nodes):
-                    if example_subgraph.unique_graphlet(graphlets):
-                        graphlets.append(example_subgraph)              
+         
+        init_time = time()                     
         desc_vectors = []
+#         print "train_descs", graphlets
         for n_nodes in xrange(max_nodes, min_nodes - 1, -1):
-            for example_ind in xrange(len(desc_set)): 
+            for elem in desc_set: 
                 new_desc = []
                 for graphlet_ind in xrange(len(graphlets)):
-                    for example_subgraph in training_set[example_ind].\
-                    graphlet_iter(n_nodes):
-                    
+                    for example_subgraph in elem.graphlet_iter(n_nodes):
+                     
                         is_isomorphic_to_some_graphlet = False
                         if example_subgraph.is_isomorphic(graphlets[graphlet_ind]):
                             is_isomorphic_to_some_graphlet = True
                             break
                     new_desc.append(int(is_isomorphic_to_some_graphlet))
                 desc_vectors.append(new_desc)
-                        
+        if verbose:
+            print "graphlet_descs time: ", round(time() - init_time, 2)
         return graphlets, desc_vectors
-            
+                
 def isomorphic(nx_graph1, nx_graph2):
         def node_match(n1,n2):
             return n1['label'] == n2['label']
@@ -201,11 +202,20 @@ if __name__ == "__main__":
                          ['a', 'd', 'c', 'c', 'b', 'e']]
     mol1, mol2, mol3, mol4, mol5, mol6, mol7, mol8, mol9 = \
     map(lambda vertices: GraphDescriptionElement(networkx_graph_init(
-                    vertices, molecule_structure)), molecule_vertices)
+                    vertices, molecule_structure),build_graphlets=False),
+                    molecule_vertices)
     train_set = [mol1, mol2, mol3, mol4, mol5, mol6, mol7]
+#     train_set = [mol1, mol2, mol3]
+    test_set = [mol8, mol9]
 #     print mol1.meet(mol9, min_nodes=3, max_nodes=3, verbose=True)[0].\
 #     is_subgraph(mol6, min_nodes=3, max_nodes=3)
 #     for gr in mol5.graphlet_iter(3):
 #         print gr.node
-    print graphlet_descs(train_set[:4], train_set,
-                                3,3)
+    graphlets, train_descs =  graphlet_descs(train_set, train_set,
+                                             use_own_graphlets=False,
+                                             verbose=True)
+    print train_descs
+#     print graphlet_descs(desc_set=test_set, 
+#                          training_set=train_set, 
+#                          graphlets=graphlets,min_nodes=3,
+#                          max_nodes=3)[1]
