@@ -134,6 +134,74 @@ class GraphClassify:
             print "Classification time in sec: ", round(time() - init_time, 2)
         return predicted
     
+    def lazy_graphlet_classify(self, test_dir, labels_filename,
+                              grouptype="MR",
+                              descs_from_file=True,
+                              train_filename=None,
+                              test_filename=None,
+                              train_labels_filename=None,
+                              test_labels_filename=None,
+                              descs_to_file=False,
+                              verbose=True):
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        train_set, test_set, train_labels, test_labels = \
+        self.graphlet_train_test(test_dir, 
+                              labels_filename,
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              grouptype=grouptype,
+                              train_filename=train_filename,
+                              test_filename=test_filename,
+                              train_labels_filename=train_labels_filename,
+                              test_labels_filename=test_labels_filename,
+                              verbose=verbose)  
+         
+        pos_set, neg_set = train_set[:len(self.positive_cxt.table),:],\
+        train_set[len(self.positive_cxt.table):,:]
+        
+        def binary_intersect(binary_desc1, binary_desc2):
+            res = []
+            for i in xrange(len(binary_desc1)):
+                if binary_desc1[i] == binary_desc2[i]:
+                    res.append(binary_desc1[i])
+                else:
+                    res.append(-1) 
+            return np.array(res)
+        
+        def inter_matches(inter, binary_desc):
+            for i in xrange(len(binary_desc)):
+                if inter[i] != 1 and inter[i] != binary_desc[i]:
+                    return False
+            return True
+        
+        predicted = []    
+        for test_obj in test_set:
+            pos_votes, neg_votes = 0,0
+            for pos_obj in pos_set:
+                inter = binary_intersect(test_obj,pos_obj)
+                for neg_obj in neg_set:
+                    if not inter_matches(inter, neg_obj):
+                        pos_votes += sum(inter != -1)
+            for neg_obj in neg_set:
+                inter = binary_intersect(test_obj, neg_obj)
+                for pos_obj in pos_set:
+                    if not inter_matches(inter, pos_obj):
+                        neg_votes += sum(inter != -1)
+            if pos_votes == neg_votes:
+                predicted.append(-1)
+            else:
+                predicted.append(int(pos_votes > neg_votes))
+        if verbose:
+            print "True: ", test_labels
+            print "Predicted: ", predicted
+            print(metrics.classification_report(test_labels, predicted))
+            print(metrics.confusion_matrix(test_labels, predicted)) 
+            print "Classification time in sec: ", round(time() - init_time, 2)
+        return predicted
+    
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
                       min_nodes=3, max_nodes=3, 
                       weighted=False,

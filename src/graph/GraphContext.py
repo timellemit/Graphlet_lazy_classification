@@ -71,9 +71,9 @@ class GraphContext:
             self.table.append(GraphDescription([
                 networkx_graph_init(node_labels,edges)], 
                 build_graphlets, min_nodes, max_nodes))  
-            if verbose:
-                print filename
-                print "{} nodes, {} edges.".format(node_num, edge_num)
+#             if verbose:
+#                 print filename
+#                 print "{} nodes, {} edges.".format(node_num, edge_num)
         if verbose:
             print "parsing time: ", round(time() - init_time, 2)
           

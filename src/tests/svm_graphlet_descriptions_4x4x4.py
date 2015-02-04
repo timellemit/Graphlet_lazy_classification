@@ -37,3 +37,13 @@ print molecules.svm_graphlet_classify(test_dir, all_labels_filename,
                 test_labels_filename=test_labels_filename, 
                 descs_to_file=True,
                 verbose=True)
+
+print molecules.lazy_graphlet_classify(test_dir, all_labels_filename, 
+                grouptype="MR", 
+                descs_from_file=True,
+                train_filename=train_filename,
+                test_filename=test_filename, 
+                train_labels_filename=train_labels_filename, 
+                test_labels_filename=test_labels_filename, 
+                descs_to_file=True,
+                verbose=True)
