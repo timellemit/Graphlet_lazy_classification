@@ -1,4 +1,5 @@
 import networkx as nx
+from networkx.algorithms.clique import find_cliques
 from itertools import combinations
 try:
     from matplotlib import pyplot
@@ -211,11 +212,14 @@ if __name__ == "__main__":
 #     is_subgraph(mol6, min_nodes=3, max_nodes=3)
 #     for gr in mol5.graphlet_iter(3):
 #         print gr.node
-    graphlets, train_descs =  graphlet_descs(train_set, train_set,
-                                             use_own_graphlets=False,
-                                             verbose=True)
-    print train_descs
+#     graphlets, train_descs =  graphlet_descs(train_set, train_set,
+#                                              use_own_graphlets=False,
+#                                              verbose=True)
+#     print train_descs
 #     print graphlet_descs(desc_set=test_set, 
 #                          training_set=train_set, 
 #                          graphlets=graphlets,min_nodes=3,
 #                          max_nodes=3)[1]
+
+    GraphDescriptionElement(nx.intersection(mol1.graph, mol2.graph).draw())
+    plt.show()

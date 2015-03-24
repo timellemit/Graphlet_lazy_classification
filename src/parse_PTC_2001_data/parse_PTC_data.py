@@ -47,4 +47,5 @@ for filename in glob.glob(input_address + "*.sdf"):
         edge_dic['type'] = edge_type
         edges.append((edge_from_id, edge_to_id, edge_dic))
     graphs.append(networkx_graph_init(node_labels,edges))
-  
+
+print graphs[0]

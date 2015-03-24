@@ -55,7 +55,7 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
                     train_labels_filename=train_labels_filename, 
                     test_labels_filename=test_labels_filename, 
                     descs_to_file=True,
-                    verbose=False)
+                    verbose=True)
     
     print "True labels: \n", true_labels
     print "Lazy prediction: \n", lazy_pred
