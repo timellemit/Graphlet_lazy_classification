@@ -66,7 +66,7 @@ class GraphContext:
                 [edge_from_id, edge_to_id, edge_type] = \
                 [int(val)-1 for val in f.readline().split()[:3]]
                 edge_dic = {}
-                edge_dic['type'] = edge_type
+                edge_dic['type'] = edge_type + 1
                 edges.append((edge_from_id, edge_to_id, edge_dic))
             self.table.append(GraphDescription([
                 networkx_graph_init(node_labels,edges)], 

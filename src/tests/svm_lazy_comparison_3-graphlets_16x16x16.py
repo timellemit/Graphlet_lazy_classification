@@ -14,9 +14,9 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
     neg_dir = os.path.join(sample_adress, grouptype + "_negative")
     test_dir = os.path.join(sample_adress, grouptype + "_test")
     train_filename = os.path.join(sample_adress,
-                                  grouptype + "_train_3_graphlet_descriptions.txt")
+                                  grouptype + "_train_3-graphlet_descriptions.txt")
     test_filename = os.path.join(sample_adress,
-                                grouptype + "_test_3_graphlet_descriptions.txt")
+                                grouptype + "_test_3-graphlet_descriptions.txt")
     train_labels_filename = os.path.join(sample_adress,
                                          grouptype + "_train_labels.txt")
     test_labels_filename = os.path.join(sample_adress,
@@ -36,25 +36,25 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
         label_file_address=all_labels_filename, 
         grouptype=grouptype)
     
-    lazy_pred =  molecules.lazy_graphlet_classify(test_dir, 
+    lazy_pred, _ =  molecules.lazy_graphlet_classify(test_dir, 
                                                   all_labels_filename, 
                 grouptype=grouptype, 
-                descs_from_file=True,
+                descs_from_file=False,
                 train_filename=train_filename,
                 test_filename=test_filename, 
                 train_labels_filename=train_labels_filename, 
                 test_labels_filename=test_labels_filename, 
-                descs_to_file=False,
+                descs_to_file=True,
                 verbose=True)
     
-    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
+    svm_pred, _ = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
                     grouptype=grouptype, 
-                    descs_from_file=True,
+                    descs_from_file=False,
                     train_filename=train_filename,
                     test_filename=test_filename, 
                     train_labels_filename=train_labels_filename, 
                     test_labels_filename=test_labels_filename, 
-                    descs_to_file=False,
+                    descs_to_file=True,
                     verbose=True)
     
     print "True labels: \n", true_labels

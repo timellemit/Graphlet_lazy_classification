@@ -36,18 +36,7 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
         label_file_address=all_labels_filename, 
         grouptype=grouptype)
     
-    lazy_pred =  molecules.lazy_graphlet_classify(test_dir, 
-                                                  all_labels_filename, 
-                grouptype=grouptype, 
-                descs_from_file=False,
-                train_filename=train_filename,
-                test_filename=test_filename, 
-                train_labels_filename=train_labels_filename, 
-                test_labels_filename=test_labels_filename, 
-                descs_to_file=True,
-                verbose=True)
-    
-    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
+    svm_pred, _ = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
                     grouptype=grouptype, 
                     descs_from_file=False,
                     train_filename=train_filename,
@@ -56,6 +45,18 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
                     test_labels_filename=test_labels_filename, 
                     descs_to_file=True,
                     verbose=True)
+    
+    lazy_pred, _ =  molecules.lazy_graphlet_classify(test_dir, 
+                                                  all_labels_filename, 
+                grouptype=grouptype, 
+                descs_from_file=True,
+                train_filename=train_filename,
+                test_filename=test_filename, 
+                train_labels_filename=train_labels_filename, 
+                test_labels_filename=test_labels_filename, 
+                descs_to_file=False,
+                verbose=True)
+    
     
     print "True labels: \n", true_labels
     print "Lazy prediction: \n", lazy_pred

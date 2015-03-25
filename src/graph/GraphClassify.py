@@ -57,17 +57,22 @@ class GraphClassify:
                                 train_labels_filename,
                                 test_labels_filename)
         else:
-            graphlets = []
+            graphlets =  []
             train_length = len(self.positive_cxt.table + 
                              self.negative_cxt.table)
             train_test_length = train_length + len(self.test_cxt.table)
+#             for desc in self.positive_cxt.table + \
+#                              self.negative_cxt.table + self.test_cxt.table:
+#                 for elem in desc.value:
+#                     all_graph_elems.append(elem)
             all_graph_elems = [elem for desc in self.positive_cxt.table + 
                              self.negative_cxt.table + self.test_cxt.table
-                              for elem in desc.value]
+                            for elem in desc.value]
+#             print "all_graph_elems ", len(all_graph_elems)
 #             all_graph_elems = self.positive_cxt.table + \
 #                              self.negative_cxt.table + self.test_cxt.table
             binary_descriptions = []#np.array([])
-            for train_desc in self.positive_cxt.table + self.positive_cxt.table:
+            for train_desc in self.positive_cxt.table + self.negative_cxt.table:
                 for elem in train_desc.value:
                     for n_nodes in xrange(self.max_nodes, self.min_nodes - 1, -1):
                         for graphlet in elem.graphlet_iter(n_nodes):
@@ -79,11 +84,13 @@ class GraphClassify:
                                     binary_descriptions.append(value)
             binary_descriptions = np.array(binary_descriptions).reshape([len(graphlets),
                                                                 train_test_length]).T   
+            print "binary_descriptions ", binary_descriptions.shape
             train_set, test_set = binary_descriptions[:train_length,:], \
                                   binary_descriptions[train_length:,:]
             train_labels = np.array([1]*len(self.positive_cxt.table) +
                                     [0]*len(self.negative_cxt.table)) 
             test_labels = select_labels(test_dir, labels_filename, grouptype)
+#             print "train_set ", train_set.shape
             if tofile:
                 np.savetxt(train_filename,train_set,fmt='%d',delimiter=',')
                 np.savetxt(test_filename,test_set,fmt='%d',delimiter=',') 
@@ -119,6 +126,7 @@ class GraphClassify:
                               train_labels_filename=train_labels_filename,
                               test_labels_filename=test_labels_filename,
                               verbose=verbose)   
+        print "train_set ", train_set.shape
 #         print "Train set descs\n", train_set
 #         print "Test set descs\n", test_set
         clf = svm.SVC(kernel='linear')
@@ -145,13 +153,13 @@ class GraphClassify:
                               test_labels_filename=None,
                               descs_to_file=False,
                               verbose=True,
-                              output_time=False):
+                              output_time=True):
 
         init_time = time()
         # Создание бинарных описаний обучающей и тестовой выборки, 
         # а также парсинг меток тестовой выборки
         # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
-        train_set, test_set, train_labels, test_labels = \
+        train_set, test_set, _, test_labels = \
         self.graphlet_train_test(test_dir, 
                               labels_filename,
                               fromfile=descs_from_file,

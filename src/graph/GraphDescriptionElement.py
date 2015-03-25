@@ -115,14 +115,14 @@ class GraphDescriptionElement(nx.Graph):
     def draw(self, ax=None, show=True, nodesize=1000):
         col = {'a' : 1, 'b': 0.75, 'c': 0.8, 'd': 0.67, 'e': 0.77, 
                'Br' : 'darkgreen', 'C': 'yellow', 'Cl': 'magenta', 'H': 'red', 'N': 'cyan',
-               'O' : 'coral'}
+               'O' : 'coral', 'Na':'crimson'}
         colors = [col.get(self.graph.node[node]['label']) for node in self.graph.nodes()]
         labels = {}
         for i in self.graph.nodes():
             labels[i] = self.graph.node[i]['label']
-     
+        edge_styles = [('solid' if edge_type == 1 else "dashed") for edge_type in [edge[2]['type'] for edge in self.graph.edges(data=True)]]    
         nx.draw_networkx(self.graph, node_size=nodesize, 
-                node_color = colors, labels = labels, ax=ax)
+                node_color = colors, labels = labels, ax=ax, style=edge_styles)
         if show:
             plt.show()
     
@@ -223,4 +223,7 @@ if __name__ == "__main__":
 #                          max_nodes=3)[1]
 
     mol1.draw()
+#     for gr in mol1.graphlet_iter(4):
+#         print gr.graph.edge
+#         gr.draw()
     plt.show()
