@@ -40,6 +40,7 @@ for grouptype in ['MM', 'FR', 'FM', 'MR']:
         
         lazy_pred, lazy_pred_time = molecules.lazy_graphlet_classify(test_dir, 
                                                       all_labels_filename, 
+
                     grouptype=grouptype, 
                     descs_from_file=False,
                     train_filename=train_filename,

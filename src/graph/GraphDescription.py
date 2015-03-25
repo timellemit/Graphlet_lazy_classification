@@ -1,14 +1,15 @@
 from GraphDescriptionElement import GraphDescriptionElement,\
     networkx_graph_init
+from graph.GraphDescriptionElement import graphlet_descs
 from time import time
 from matplotlib import pyplot as plt
-
 """
 multiple graphs in one element
 """
-from graph.GraphDescriptionElement import graphlet_descs
+
 class GraphDescription:
     def __init__(self, graphs, build_graphlets=False,
+
                  min_nodes=1, max_nodes=100000):
         """
         Initializes an instance of a childDescription class
@@ -17,8 +18,7 @@ class GraphDescription:
         self.build_graphlets = build_graphlets
         if type(graphs) in [list, set, tuple]:
             self.value = [GraphDescriptionElement(elem, build_graphlets,
-                                                      min_nodes, max_nodes)
-                              for elem in list(graphs)]
+                        min_nodes, max_nodes) for elem in list(graphs)]
             # stores the raw list or set 
             self.raw_value = graphs
         else:

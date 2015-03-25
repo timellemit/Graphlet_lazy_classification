@@ -18,6 +18,7 @@ train_labels_filename = os.path.join(sample_adress,"MR_train_labels.txt")
 test_labels_filename = os.path.join(sample_adress,"MR_test_labels.txt")
 labels_filename = os.path.join(input_address,"training_set_results.txt")
 
+
 # Класс для проверки разных способов классификации
 # Параметры build_graphlets, min_nodes, max_nodes, означают, что
 # граф описывается множеством своих связных подграфов с числом вершин

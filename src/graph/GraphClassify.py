@@ -134,6 +134,7 @@ class GraphClassify:
             return predicted, round(time() - init_time, 2)
         else:
             return predicted
+
     
     def lazy_graphlet_classify(self, test_dir, labels_filename,
                               grouptype="MR",
@@ -145,6 +146,7 @@ class GraphClassify:
                               descs_to_file=False,
                               verbose=True,
                               output_time=False):
+
         init_time = time()
         # Создание бинарных описаний обучающей и тестовой выборки, 
         # а также парсинг меток тестовой выборки
@@ -208,6 +210,7 @@ class GraphClassify:
             return predicted, round(time() - init_time, 2)
         else:
             return predicted
+
     
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
                       min_nodes=3, max_nodes=3, 
@@ -215,6 +218,7 @@ class GraphClassify:
                       verbose=False,
                       ptc=False,
                       output_time=False):
+
         def test_intersections(train_context, opposite_context,
                                test_object, use_graphlets,
                                min_nodes, max_nodes, 

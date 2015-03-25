@@ -1,8 +1,6 @@
 import networkx as nx
 from itertools import combinations
-
 from matplotlib import pyplot as plt
-
 from time import time
 
 class GraphDescriptionElement(nx.Graph):

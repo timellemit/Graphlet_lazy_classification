@@ -11,12 +11,13 @@ pos_dir = os.path.join(sample_adress, "MR_positive")
 neg_dir = os.path.join(sample_adress, "MR_negative")
 test_dir = os.path.join(sample_adress, "MR_test")
 train_filename = os.path.join(sample_adress,
-                                           "MR_train_3_graphlet_descriptions.txt")
+                                           "MR_train_3-graphlet_descriptions.txt")
 test_filename = os.path.join(sample_adress,
-                                          "MR_test_3_graphlet_descriptions.txt")
+                                          "MR_test_3-graphlet_descriptions.txt")
 train_labels_filename = os.path.join(sample_adress,"MR_train_labels.txt")
 test_labels_filename = os.path.join(sample_adress,"MR_test_labels.txt")
 labels_filename = os.path.join(input_address,"training_set_results.txt")
+
 
 # Класс для проверки разных способов классификации
 # Параметры build_graphlets, min_nodes, max_nodes, означают, что
