@@ -4,7 +4,7 @@ from time import time
 from parse_PTC_2001_data.parse_PTC_train_labels import select_labels
 import numpy as np
 from parse_PTC_2001_data.parse_binary_graphlet_descriptions import parse_graphlet_descriptions
-from sklearn import svm, metrics
+from sklearn import svm, metrics, neighbors
 
 class GraphClassify:  
     
@@ -142,8 +142,92 @@ class GraphClassify:
             return predicted, round(time() - init_time, 2)
         else:
             return predicted
-
     
+    def scikit_graphlet_classify(self, clf,
+                                 test_dir, labels_filename,
+                                 grouptype="MR",
+                                 descs_from_file=True,
+                                 train_filename=None,
+                                 test_filename=None,
+                                 train_labels_filename=None,
+                                 test_labels_filename=None,
+                                 descs_to_file=False,
+                                 verbose=True,
+                                 output_time=True):
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        train_set, test_set, train_labels, test_labels = \
+        self.graphlet_train_test(test_dir, 
+                              labels_filename,
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              grouptype=grouptype,
+                              train_filename=train_filename,
+                              test_filename=test_filename,
+                              train_labels_filename=train_labels_filename,
+                              test_labels_filename=test_labels_filename,
+                              verbose=verbose)   
+        print "train_set ", train_set.shape
+#         print "Train set descs\n", train_set
+#         print "Test set descs\n", test_set
+        clf = clf;
+        clf.fit(train_set, train_labels)
+        predicted =  clf.predict(test_set)
+        if verbose:
+            print "True: ", test_labels
+            print "Predicted: ", predicted
+            print(metrics.classification_report(test_labels, predicted))
+            print(metrics.confusion_matrix(test_labels, predicted)) 
+            print "scikit_graphlet_classify, time in sec: ", round(time() - init_time, 2)
+        if output_time:
+            return predicted, round(time() - init_time, 2)
+        else:
+            return predicted
+        
+    def knn_graphlet_classify(self, test_dir, labels_filename,
+                              grouptype="MR",
+                              descs_from_file=True,
+                              train_filename=None,
+                              test_filename=None,
+                              train_labels_filename=None,
+                              test_labels_filename=None,
+                              descs_to_file=False,
+                              verbose=True,
+                              output_time=True):
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        train_set, test_set, train_labels, test_labels = \
+        self.graphlet_train_test(test_dir, 
+                              labels_filename,
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              grouptype=grouptype,
+                              train_filename=train_filename,
+                              test_filename=test_filename,
+                              train_labels_filename=train_labels_filename,
+                              test_labels_filename=test_labels_filename,
+                              verbose=verbose)   
+        print "train_set ", train_set.shape
+#         print "Train set descs\n", train_set
+#         print "Test set descs\n", test_set
+        clf = neighbors.KNeighborsClassifier(4)
+        clf.fit(train_set, train_labels)
+        predicted =  clf.predict(test_set)
+        if verbose:
+            print "True: ", test_labels
+            print "Predicted: ", predicted
+            print(metrics.classification_report(test_labels, predicted))
+            print(metrics.confusion_matrix(test_labels, predicted)) 
+            print "knn_graphlet_classify, time in sec: ", round(time() - init_time, 2)
+        if output_time:
+            return predicted, round(time() - init_time, 2)
+        else:
+            return predicted
+        
     def lazy_graphlet_classify(self, test_dir, labels_filename,
                               grouptype="MR",
                               descs_from_file=True,
@@ -196,14 +280,14 @@ class GraphClassify:
                 inter = binary_intersect(test_obj,pos_obj)
                 for neg_obj in neg_set:
                     if not inter_matches(inter, neg_obj):
-#                         print type(inter),sum(inter != -1)
                         pos_votes += sum(inter != -1)
-#                         print pos_votes
+#                         pos_votes += 1
             for neg_obj in neg_set:
                 inter = binary_intersect(test_obj, neg_obj)
                 for pos_obj in pos_set:
                     if not inter_matches(inter, pos_obj):
                         neg_votes += sum(inter != -1)
+#                         neg_votes += 1
             if pos_votes == neg_votes:
                 predicted.append(-1)
             else:

@@ -17,14 +17,15 @@ molecules = GraphClassify(pos_cxt_file=pos_dir,
 
 pos_mol_names, neg_mol_names = ["TR206", "TR245", "TR267", "TR331"], [ "TR068", "TR126", "TR165", "TR276"]
 
-for i in xrange(4):
+molecules.positive_cxt.table[2].value[0].draw()
+for i in xrange(2,3):
 #     print molecules.positive_cxt.table[i].value[0].graph.edge
     print "{0}: {1} graphlets".format(pos_mol_names[i], str(len(molecules.positive_cxt.table[i].value[0].all_k_graphlets(4))))
 #     for j in xrange(len(molecules.positive_cxt.table[i].value[0].all_k_graphlets(4))):
 # #         print molecules.positive_cxt.table[i].value[0].all_k_graphlets(4)[j].graph.edge
 #         molecules.positive_cxt.table[i].value[0].all_k_graphlets(4)[j].draw()
     GraphDescription(graphs=[elem.graph for elem in molecules.positive_cxt.table[i].value[0].all_k_graphlets(4)]).\
-    draw(num_x_subplots=4, num_y_subplots=4, nodesize=400)
+    draw(num_x_subplots=4, num_y_subplots=3, nodesize=1500)
     
 for i in xrange(4):
     print "{0}: {1} graphlets".format(neg_mol_names[i], str(len(molecules.negative_cxt.table[i].value[0].all_k_graphlets(4))))

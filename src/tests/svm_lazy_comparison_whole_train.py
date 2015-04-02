@@ -12,7 +12,7 @@ sample_adress = os.path.join(input_address, "PTC_training_set")
 #def form_latex_output():
 
 report = np.array([])
-for grouptype in ['MM', 'FR', 'FM', 'MR']:
+for grouptype in ['MM', 'FR','FM', 'MR']:
     group_report = np.array([])
     pos_dir = os.path.join(sample_adress, grouptype + "_positive")
     neg_dir = os.path.join(sample_adress, grouptype + "_negative")
@@ -21,7 +21,7 @@ for grouptype in ['MM', 'FR', 'FM', 'MR']:
             test_address=test_dir, 
             label_file_address=all_labels_filename, 
             grouptype=grouptype)
-    for k_nodes in [3,4,5]:#4,5]:
+    for k_nodes in [3,4,5]:
         subreport_lazy, subreport_svm = np.array([]), np.array([])
         print "Grouptype: {0}, {1}-graphlets".format(grouptype, str(k_nodes))
         train_filename = os.path.join(sample_adress,
@@ -36,7 +36,7 @@ for grouptype in ['MM', 'FR', 'FM', 'MR']:
         molecules = GraphClassify(pos_cxt_file=pos_dir,
                                   neg_cxt_file=neg_dir,
                                   build_graphlets=True, 
-                                  min_nodes=k_nodes, max_nodes=k_nodes, ptc=True,
+                                  min_nodes=2, max_nodes=k_nodes, ptc=True,
                                   verbose=False)
         
         svm_pred, svm_pred_time = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
@@ -98,4 +98,4 @@ for grouptype in ['MM', 'FR', 'FM', 'MR']:
         report = group_report
         
 print report
-np.savetxt(os.path.join(input_address, "report.txt"), report, fmt='%.2f',delimiter=',')
+np.savetxt(os.path.join("C:\\Users\\User\\YandexDisk\\conferences_journals\\ECML_PKDD_2015", "report.txt"), report, fmt='%.2f',delimiter=',')
