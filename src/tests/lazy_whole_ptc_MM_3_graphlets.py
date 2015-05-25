@@ -12,13 +12,13 @@ sample_adress = os.path.join(input_address, "PTC")
 MM_train_labels_address = os.path.join(sample_adress,"MM_train_labels.txt")
 MM_test_labels_address = os.path.join(sample_adress,"MM_test_labels.txt")
 
-for grouptype in ['MM']:#, 'FR','FM', 'MR']:
+for grouptype in ['MM','FR','FM', 'MR']:
     group_report = np.array([])
     pos_dir = os.path.join(sample_adress, grouptype + "_positive_sample")
     neg_dir = os.path.join(sample_adress, grouptype + "_negative_sample")
     test_dir = os.path.join(sample_adress, "test")
     true_labels = select_labels(MM_test_labels_address)
-    for k_nodes in [4]:#,4]:#,5,6]:
+    for k_nodes in [5]:#,4]:#,5,6]:
         subreport_lazy, subreport_svm = np.array([]), np.array([])
         print "Grouptype: {0}, {1}-graphlets".format(grouptype, str(k_nodes))
         train_graphlet_filename = os.path.join(sample_adress,

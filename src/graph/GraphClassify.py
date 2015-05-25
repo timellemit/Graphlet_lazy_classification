@@ -386,7 +386,6 @@ class GraphClassify:
         # Создание бинарных описаний обучающей и тестовой выборки, 
         # а также парсинг меток тестовой выборки
         # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
-        print "descs_from_file ", descs_from_file
         train_set, test_set = \
         self.graphlet_descriptions(test_dir=test_dir, 
                               fromfile=descs_from_file,
@@ -419,7 +418,6 @@ class GraphClassify:
             return False
         
         predicted = []    
-        print 'len(test_set) ', len(test_set)
         for test_ind in xrange(len(test_set)):
             pos_votes, neg_votes = 0, 0
             for pos_ind in xrange(len(pos_set)):
