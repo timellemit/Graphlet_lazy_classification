@@ -9,7 +9,7 @@ input_address = os.path.join(os.path.join(os.pardir, os.pardir), "input")
 all_labels_filename = os.path.join(input_address,"training_set_results.txt")
 sample_adress = os.path.join(input_address, "PTC_sample_4x4x4")
 
-for grouptype in ['MR', 'MM', 'FR', 'FM']:
+for grouptype in ['MR']:#, 'MM', 'FR', 'FM']:
     pos_dir = os.path.join(sample_adress, grouptype + "_positive")
     neg_dir = os.path.join(sample_adress, grouptype + "_negative")
     test_dir = os.path.join(sample_adress, grouptype + "_test")
@@ -36,6 +36,17 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
         label_file_address=all_labels_filename, 
         grouptype=grouptype)
     
+    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
+                    grouptype=grouptype, 
+                    descs_from_file=False,
+                    train_filename=train_filename,
+                    test_filename=test_filename, 
+                    train_labels_filename=train_labels_filename, 
+                    test_labels_filename=test_labels_filename, 
+                    descs_to_file=True,
+                    verbose=True,
+                    output_time=False)
+    
     lazy_pred =  molecules.lazy_graphlet_classify(test_dir, 
                                                   all_labels_filename, 
                 grouptype=grouptype, 
@@ -45,17 +56,10 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
                 train_labels_filename=train_labels_filename, 
                 test_labels_filename=test_labels_filename, 
                 descs_to_file=False,
-                verbose=True)
+                verbose=True,
+                output_time=False)
     
-    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
-                    grouptype=grouptype, 
-                    descs_from_file=True,
-                    train_filename=train_filename,
-                    test_filename=test_filename, 
-                    train_labels_filename=train_labels_filename, 
-                    test_labels_filename=test_labels_filename, 
-                    descs_to_file=False,
-                    verbose=True)
+    
     
     print "True labels: \n", true_labels
     print "Lazy prediction: \n", lazy_pred

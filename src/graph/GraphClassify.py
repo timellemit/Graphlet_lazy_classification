@@ -5,6 +5,7 @@ from parse_PTC_2001_data.parse_PTC_train_labels import select_labels
 import numpy as np
 from parse_PTC_2001_data.parse_binary_graphlet_descriptions import parse_graphlet_descriptions
 from sklearn import svm, metrics, neighbors
+from parse_PTC_2001_data.parse_labels import labels_to_array
 
 class GraphClassify:  
     
@@ -50,12 +51,11 @@ class GraphClassify:
                                      max_nodes=self.max_nodes, ptc=self.ptc,
                                      verbose=verbose)
         if fromfile:
-            train_set, test_set, train_labels, test_labels = \
+            train_set, test_set, train_labels = \
             parse_graphlet_descriptions(
                                 train_filename, 
                                 test_filename,
-                                train_labels_filename,
-                                test_labels_filename)
+                                train_labels_filename)
         else:
             graphlets =  []
             train_length = len(self.positive_cxt.table + 
@@ -74,6 +74,7 @@ class GraphClassify:
             binary_descriptions = []#np.array([])
             for train_desc in self.positive_cxt.table + self.negative_cxt.table:
                 for elem in train_desc.value:
+                    print elem
                     for n_nodes in xrange(self.max_nodes, self.min_nodes - 1, -1):
                         for graphlet in elem.graphlet_iter(n_nodes):
                             if graphlet.unique_graphlet(graphlets):
@@ -84,13 +85,14 @@ class GraphClassify:
                                     binary_descriptions.append(value)
             binary_descriptions = np.array(binary_descriptions).reshape([len(graphlets),
                                                                 train_test_length]).T   
-            print "binary_descriptions ", binary_descriptions.shape
+            if verbose:
+                print "binary_descriptions ", binary_descriptions.shape, len(graphlets)
             train_set, test_set = binary_descriptions[:train_length,:], \
                                   binary_descriptions[train_length:,:]
             train_labels = np.array([1]*len(self.positive_cxt.table) +
                                     [0]*len(self.negative_cxt.table)) 
             test_labels = select_labels(test_dir, labels_filename, grouptype)
-#             print "train_set ", train_set.shape
+            print "train_set ", train_set.shape
             if tofile:
                 np.savetxt(train_filename,train_set,fmt='%d',delimiter=',')
                 np.savetxt(test_filename,test_set,fmt='%d',delimiter=',') 
@@ -98,8 +100,71 @@ class GraphClassify:
                 np.savetxt(test_labels_filename,test_labels,fmt='%d',delimiter=',') 
             if verbose:
                 print graphlets
+#                 print [gr.print_3_chain() for gr in graphlets]
                 print "Graphlet description time in sec: ", round(time() - init_time, 2) 
-        return train_set, test_set, train_labels, test_labels
+        return train_set, test_set, train_labels
+    
+    def graphlet_descriptions(self, test_dir,
+                            fromfile=True,
+                            tofile=False,
+                            train_graphlet_filename=None,
+                            test_graphlet_filename=None,
+                            verbose=False):
+        init_time = time()
+        self.test_cxt = self.context(data_file_address=test_dir,
+                                      build_graphlets=self.build_graphlets,
+                                     min_nodes=self.min_nodes, 
+                                     max_nodes=self.max_nodes, ptc=self.ptc,
+                                     verbose=verbose)
+        if fromfile:
+            train_set, test_set = \
+            parse_graphlet_descriptions(
+                                train_graphlet_filename, 
+                                test_graphlet_filename)
+        else:
+            graphlets =  []
+            train_length = len(self.positive_cxt.table + 
+                             self.negative_cxt.table)
+            
+            train_test_length = train_length + len(self.test_cxt.table)
+#             for desc in self.positive_cxt.table + \
+#                              self.negative_cxt.table + self.test_cxt.table:
+#                 for elem in desc.value:
+#                     all_graph_elems.append(elem)
+            all_graph_elems = [elem for desc in self.positive_cxt.table + 
+                             self.negative_cxt.table + self.test_cxt.table
+                            for elem in desc.value]
+#             print "all_graph_elems ", len(all_graph_elems)
+#             all_graph_elems = self.positive_cxt.table + \
+#                              self.negative_cxt.table + self.test_cxt.table
+            binary_descriptions = []#np.array([])
+            for train_desc in self.positive_cxt.table + self.negative_cxt.table:
+                for elem in train_desc.value:
+                    print elem
+                    for n_nodes in xrange(self.max_nodes, self.min_nodes - 1, -1):
+                        for graphlet in elem.graphlet_iter(n_nodes):
+                            if graphlet.unique_graphlet(graphlets):
+                                graphlets.append(graphlet)
+                                for test_elem in all_graph_elems:
+                                    value = int(graphlet.is_subgraph(test_elem,
+                                            use_graphlets=True))
+                                    binary_descriptions.append(value)
+            binary_descriptions = np.array(binary_descriptions).reshape([len(graphlets),
+                                                                train_test_length]).T   
+            if verbose:
+                print "binary_descriptions ", binary_descriptions.shape, len(graphlets)
+            train_set, test_set = binary_descriptions[:train_length,:], \
+                                  binary_descriptions[train_length:,:]
+            print "train_set ", train_set
+            if tofile:
+                print train_graphlet_filename, test_graphlet_filename
+                np.savetxt(train_graphlet_filename,train_set,fmt='%d',delimiter=',')
+                np.savetxt(test_graphlet_filename,test_set,fmt='%d',delimiter=',') 
+            if verbose:
+                print graphlets
+                print [gr.print_3_chain() for gr in graphlets]
+                print "Graphlet description time in sec: ", round(time() - init_time, 2) 
+        return train_set, test_set
     
     def svm_graphlet_classify(self, test_dir, labels_filename,
                               grouptype="MR",
@@ -115,7 +180,7 @@ class GraphClassify:
         # Создание бинарных описаний обучающей и тестовой выборки, 
         # а также парсинг меток тестовой выборки
         # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
-        train_set, test_set, train_labels, test_labels = \
+        train_set, test_set, train_labels = \
         self.graphlet_train_test(test_dir, 
                               labels_filename,
                               fromfile=descs_from_file,
@@ -133,10 +198,7 @@ class GraphClassify:
         clf.fit(train_set, train_labels)
         predicted =  clf.predict(test_set)
         if verbose:
-            print "True: ", test_labels
             print "Predicted: ", predicted
-            print(metrics.classification_report(test_labels, predicted))
-            print(metrics.confusion_matrix(test_labels, predicted)) 
             print "svm_graphlet_classify, time in sec: ", round(time() - init_time, 2)
         if output_time:
             return predicted, round(time() - init_time, 2)
@@ -238,12 +300,12 @@ class GraphClassify:
                               descs_to_file=False,
                               verbose=True,
                               output_time=True):
-
+ 
         init_time = time()
         # Создание бинарных описаний обучающей и тестовой выборки, 
         # а также парсинг меток тестовой выборки
         # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
-        train_set, test_set, _, test_labels = \
+        train_set, test_set, _  = \
         self.graphlet_train_test(test_dir, 
                               labels_filename,
                               fromfile=descs_from_file,
@@ -254,10 +316,87 @@ class GraphClassify:
                               train_labels_filename=train_labels_filename,
                               test_labels_filename=test_labels_filename,
                               verbose=verbose)  
-         
+          
         pos_set, neg_set = train_set[:len(self.positive_cxt.table),:],\
         train_set[len(self.positive_cxt.table):,:]
-        
+        def binary_intersect(binary_desc1, binary_desc2):
+            res = []
+            for i in xrange(len(binary_desc1)):
+                if binary_desc1[i] == binary_desc2[i]:
+                    res.append(binary_desc1[i])
+                else:
+                    res.append(-1) 
+            return np.array(res)
+         
+        def inter_matches(inter, binary_desc):
+            for i in xrange(len(binary_desc)):
+                if binary_desc[i] != 1 and inter[i] == 1:
+                    return False  
+            return True
+         
+        def is_falsified(inter, object_set):
+            for obj in object_set:
+                if inter_matches(inter, obj):
+                    return True
+            return False
+         
+        predicted = []    
+        for test_ind in xrange(len(test_set)):
+            pos_votes, neg_votes = 0, 0
+            for pos_ind in xrange(len(pos_set)):
+                inter = binary_intersect(test_set[test_ind], pos_set[pos_ind])
+                if not is_falsified(inter, neg_set):
+                    if verbose:
+                        print "Intersection of test {0} and pos {1} not falsified".format(test_ind + 1, 
+                                                                             pos_ind + 1)
+                    pos_votes += sum(inter == 1)
+#                         pos_votes += 1
+            for neg_ind in xrange(len(neg_set)):
+                inter = binary_intersect(test_set[test_ind], neg_set[neg_ind])
+                if not is_falsified(inter, pos_set):
+                    if verbose:
+                        print "Intersection of test {0} and neg {1} not falsified".format(test_ind + 1, 
+                                                                             neg_ind + 1)
+                    neg_votes += sum(inter == 1)
+#                         neg_votes += 1
+            if pos_votes == neg_votes:
+                predicted.append(-1)
+            else:
+                predicted.append(int(pos_votes > neg_votes))
+            if verbose:
+                print "Score: {0}:{1}".format(pos_votes, neg_votes)
+        if verbose:
+            print "Predicted: ", predicted
+            print "lazy_graphlet_classify, time in sec: ", round(time() - init_time, 2)
+        if output_time:
+            return predicted, round(time() - init_time, 2)
+        else:
+            return predicted
+
+    def lazy_graphlet_classify2(self, pos_dir, neg_dir, test_dir,
+                              train_labels_file,
+                              descs_from_file=True,
+                              descs_to_file=False,
+                              train_graphlet_filename=None,
+                              test_graphlet_filename=None,
+                              verbose=True,
+                              output_time=True):
+
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        print "descs_from_file ", descs_from_file
+        train_set, test_set = \
+        self.graphlet_descriptions(test_dir=test_dir, 
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              train_graphlet_filename=train_graphlet_filename,
+                              test_graphlet_filename=test_graphlet_filename,
+                              verbose=verbose)  
+        train_labels = labels_to_array(train_labels_file) 
+        pos_set, neg_set = train_set[:len(self.positive_cxt.table),:],\
+        train_set[len(self.positive_cxt.table):,:]
         def binary_intersect(binary_desc1, binary_desc2):
             res = []
             for i in xrange(len(binary_desc1)):
@@ -269,41 +408,53 @@ class GraphClassify:
         
         def inter_matches(inter, binary_desc):
             for i in xrange(len(binary_desc)):
-                if inter[i] != 1 and inter[i] != binary_desc[i]:
-                    return False
+                if binary_desc[i] != 1 and inter[i] == 1:
+                    return False  
             return True
         
+        def is_falsified(inter, object_set):
+            for obj in object_set:
+                if inter_matches(inter, obj):
+                    return True
+            return False
+        
         predicted = []    
-        for test_obj in test_set:
-            pos_votes, neg_votes = 0,0
-            for pos_obj in pos_set:
-                inter = binary_intersect(test_obj,pos_obj)
-                for neg_obj in neg_set:
-                    if not inter_matches(inter, neg_obj):
-                        pos_votes += sum(inter != -1)
+        print 'len(test_set) ', len(test_set)
+        for test_ind in xrange(len(test_set)):
+            pos_votes, neg_votes = 0, 0
+            for pos_ind in xrange(len(pos_set)):
+                inter = binary_intersect(test_set[test_ind], pos_set[pos_ind])
+                if not is_falsified(inter, neg_set):
+                    if verbose:
+                        print "Intersection of test {0} and pos {1} not falsified".format(test_ind + 1, 
+                                                                             pos_ind + 1)
+                    pos_votes += sum(inter == 1)
 #                         pos_votes += 1
-            for neg_obj in neg_set:
-                inter = binary_intersect(test_obj, neg_obj)
-                for pos_obj in pos_set:
-                    if not inter_matches(inter, pos_obj):
-                        neg_votes += sum(inter != -1)
+            for neg_ind in xrange(len(neg_set)):
+                inter = binary_intersect(test_set[test_ind], neg_set[neg_ind])
+                if not is_falsified(inter, pos_set):
+                    if verbose:
+                        print "Intersection of test {0} and neg {1} not falsified".format(test_ind + 1, 
+                                                                             neg_ind + 1)
+                    neg_votes += sum(inter == 1)
 #                         neg_votes += 1
             if pos_votes == neg_votes:
                 predicted.append(-1)
             else:
                 predicted.append(int(pos_votes > neg_votes))
-        if verbose:
-            print "True: ", test_labels
-            print "Predicted: ", predicted
-            print(metrics.classification_report(test_labels, predicted))
-            print(metrics.confusion_matrix(test_labels, predicted)) 
-            print "lazy_graphlet_classify, time in sec: ", round(time() - init_time, 2)
+            if verbose:
+                print "Score: {0}:{1}".format(pos_votes, neg_votes)
+#         if verbose:
+#             print "True: ", test_labels
+#             print "Predicted: ", predicted
+#             print(metrics.classification_report(test_labels, predicted))
+#             print(metrics.confusion_matrix(test_labels, predicted)) 
+#             print "lazy_graphlet_classify, time in sec: ", round(time() - init_time, 2)
         if output_time:
             return predicted, round(time() - init_time, 2)
         else:
             return predicted
-
-    
+        
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
                       min_nodes=3, max_nodes=3, 
                       weighted=False,

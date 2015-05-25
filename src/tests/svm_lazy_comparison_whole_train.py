@@ -21,7 +21,7 @@ for grouptype in ['MM', 'FR','FM', 'MR']:
             test_address=test_dir, 
             label_file_address=all_labels_filename, 
             grouptype=grouptype)
-    for k_nodes in [3,4,5]:
+    for k_nodes in [3,4]:#,5,6]:
         subreport_lazy, subreport_svm = np.array([]), np.array([])
         print "Grouptype: {0}, {1}-graphlets".format(grouptype, str(k_nodes))
         train_filename = os.path.join(sample_adress,
@@ -41,12 +41,12 @@ for grouptype in ['MM', 'FR','FM', 'MR']:
         
         svm_pred, svm_pred_time = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
                         grouptype=grouptype, 
-                        descs_from_file=False,
+                        descs_from_file=True,
                         train_filename=train_filename,
                         test_filename=test_filename, 
                         train_labels_filename=train_labels_filename, 
                         test_labels_filename=test_labels_filename, 
-                        descs_to_file=True,
+                        descs_to_file=False,
                         verbose=False,
                         output_time=True)
         

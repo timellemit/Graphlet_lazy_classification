@@ -7,14 +7,14 @@ import numpy as np
 
 input_address = os.path.join(os.path.join(os.pardir, os.pardir), "input")
 all_labels_filename = os.path.join(input_address,"training_set_results.txt")
-sample_adress = os.path.join(input_address, "PTC_sample_4x4x4")
+sample_adress = os.path.join(input_address, "PTC_training_set")
 
 report = np.array([])
-for grouptype in ['MR']:#, 'FR','FM', 'MR']:
+for grouptype in ['MM']:#, 'FR','FM', 'MR']:
     group_report = np.array([])
-    pos_dir = os.path.join(sample_adress, grouptype + "_positive")
-    neg_dir = os.path.join(sample_adress, grouptype + "_negative")
-    test_dir = os.path.join(sample_adress, grouptype + "_test")
+    pos_dir = os.path.join(sample_adress, grouptype + "_positive_sample")
+    neg_dir = os.path.join(sample_adress, grouptype + "_negative_sample")
+    test_dir = os.path.join(sample_adress, grouptype + "_test_sample")
     true_labels = select_labels(
             test_address=test_dir, 
             label_file_address=all_labels_filename, 
@@ -72,4 +72,4 @@ for grouptype in ['MR']:#, 'FR','FM', 'MR']:
         report = group_report
         
 print report
-np.savetxt(os.path.join("C:\\Users\\User\\YandexDisk\\conferences_journals\\ECML_PKDD_2015", "report.txt"), report, fmt='%.2f',delimiter=',')
+np.savetxt(os.path.join("C:\\Users\\User\\YandexDisk", "report.txt"), report, fmt='%.2f',delimiter=',')

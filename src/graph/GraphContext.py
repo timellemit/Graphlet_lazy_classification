@@ -57,6 +57,8 @@ class GraphContext:
             f.readline()
             [node_num, edge_num] = [int(val) for val in f.readline().split()[:2]]
 #             if node_num < 35:
+            print filename 
+            print node_num, edge_num
             self.obj_names.append(filename[len(input_address):] + "_" +
                                   str(node_num) +"x" + str(edge_num))
             for node_id in xrange(node_num):  # @UnusedVariable
@@ -85,7 +87,7 @@ if __name__ == "__main__":
 #     context = GraphContext("../../input/PTC_sample/test/",
 #                            build_graphlets=False, min_nodes=3, 
 #                            max_nodes=3, ptc=True)
-    context = GraphContext("/Users/yorko/Documents/workspace/JSM_python/input/PTC_training_set/",
+    context = GraphContext("C:\Users\User\Documents\eclipse_workspace\graphlet_lazy\input\PTC_training_set\FR_test",
                            build_graphlets=False, min_nodes=3, 
                            max_nodes=3, ptc=True)
     

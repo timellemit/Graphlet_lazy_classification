@@ -64,6 +64,8 @@ class GraphDescriptionElement(nx.Graph):
     
     def unique_graphlet(self, graphlets):             
             for graphlet in graphlets:
+#                 print self.graph.node
+#                 print graphlet.graph.node
                 if isomorphic(self.graph, graphlet.graph):
                     return False
             return True
@@ -94,7 +96,31 @@ class GraphDescriptionElement(nx.Graph):
             return meet
         return []
     
-    
+    def print_3_chain(self):
+        edge_type_dic = {1:'-', 2:"="}
+        if len(self.graph.node) == 0: # empty graph
+            return ""
+        else: # non-empty graph, initialize with the first atom label
+            prev_from_id = self.graph.edges()[0][0]
+            prev_to_id = prev_from_id
+            s = self.graph.node[prev_from_id]["label"]
+            
+        for edge in self.graph.edges(data=True): # like [(0,1,{'type':1}),(1,2,{'type':2})]
+            node_to_id, node_from_id, edge_type = edge[0], edge[1], edge[2]['type']
+            if node_from_id == prev_from_id:
+                s = self.graph.node[node_to_id]["label"] + edge_type_dic[edge_type] + s
+                
+            elif node_to_id == prev_from_id:
+                s = self.graph.node[node_from_id]["label"] + edge_type_dic[edge_type] + s
+                prev_from_id = node_from_id
+            elif node_from_id == prev_to_id:
+                s +=  edge_type_dic[edge_type] + self.graph.node[node_to_id]["label"]
+            elif node_to_id == prev_to_id:
+                s +=  edge_type_dic[edge_type] + self.graph.node[node_from_id]["label"]
+            else: # impossible for 3-node chains
+                pass
+            prev_from_id, prev_to_id = node_from_id, node_to_id
+        return s
 
     def __str__(self):
 #         labels_coding = {'a': 'CH3', 'b': 'OH', 'c':'C', 'd': 'NH2','e': 'Cl'}
@@ -223,6 +249,7 @@ if __name__ == "__main__":
 #                          max_nodes=3)[1]
 
     mol1.draw()
+    print mol1
 #     for gr in mol1.graphlet_iter(4):
 #         print gr.graph.edge
 #         gr.draw()

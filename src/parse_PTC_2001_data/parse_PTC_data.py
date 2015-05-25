@@ -26,7 +26,7 @@ def networkx_graph_init(node_labels, edges):
         graph.node[i]['label'] = node_labels[i]
     return graph  
 
-input_address = '../../input/PTC_test_set/'
+input_address = "C:\Users\User\Documents\eclipse_workspace\graphlet_lazy\input\PTC_training_set\original"
 graphs = []
 for filename in glob.glob(input_address + "*.sdf"):
     print filename

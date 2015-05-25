@@ -9,14 +9,14 @@ input_address = os.path.join(os.path.join(os.pardir, os.pardir), "input")
 all_labels_filename = os.path.join(input_address,"training_set_results.txt")
 sample_adress = os.path.join(input_address, "PTC_sample_16x16x16")
 
-for grouptype in ['MR', 'MM', 'FR', 'FM']:
+for grouptype in ['MR']:#, 'MM', 'FR', 'FM']:
     pos_dir = os.path.join(sample_adress, grouptype + "_positive")
     neg_dir = os.path.join(sample_adress, grouptype + "_negative")
     test_dir = os.path.join(sample_adress, grouptype + "_test")
     train_filename = os.path.join(sample_adress,
-                                  grouptype + "_train_3-graphlet_descriptions.txt")
+                                  grouptype + "_train_3_graphlet_descriptions.txt")
     test_filename = os.path.join(sample_adress,
-                                grouptype + "_test_3-graphlet_descriptions.txt")
+                                grouptype + "_test_3_graphlet_descriptions.txt")
     train_labels_filename = os.path.join(sample_adress,
                                          grouptype + "_train_labels.txt")
     test_labels_filename = os.path.join(sample_adress,
@@ -36,18 +36,7 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
         label_file_address=all_labels_filename, 
         grouptype=grouptype)
     
-    lazy_pred, _ =  molecules.lazy_graphlet_classify(test_dir, 
-                                                  all_labels_filename, 
-                grouptype=grouptype, 
-                descs_from_file=False,
-                train_filename=train_filename,
-                test_filename=test_filename, 
-                train_labels_filename=train_labels_filename, 
-                test_labels_filename=test_labels_filename, 
-                descs_to_file=True,
-                verbose=True)
-    
-    svm_pred, _ = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
+    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
                     grouptype=grouptype, 
                     descs_from_file=False,
                     train_filename=train_filename,
@@ -55,7 +44,22 @@ for grouptype in ['MR', 'MM', 'FR', 'FM']:
                     train_labels_filename=train_labels_filename, 
                     test_labels_filename=test_labels_filename, 
                     descs_to_file=True,
-                    verbose=True)
+                    verbose=True,
+                    output_time=False)
+    
+    lazy_pred =  molecules.lazy_graphlet_classify(test_dir, 
+                                                  all_labels_filename, 
+                grouptype=grouptype, 
+                descs_from_file=True,
+                train_filename=train_filename,
+                test_filename=test_filename, 
+                train_labels_filename=train_labels_filename, 
+                test_labels_filename=test_labels_filename, 
+                descs_to_file=False,
+                verbose=True,
+                output_time=False)
+    
+    
     
     print "True labels: \n", true_labels
     print "Lazy prediction: \n", lazy_pred

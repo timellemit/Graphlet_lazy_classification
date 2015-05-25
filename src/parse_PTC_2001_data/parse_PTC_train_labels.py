@@ -1,14 +1,14 @@
 import os
 import shutil
 
-# input_address = '/Users/yorko/Documents/workspace/graphlet_lazy/input/'
-input_address = "C:\\Users\\User\\Documents\\eclipse_workspace\\graphlet_lazy\\input\\"
-PTC_train_address = input_address + "PTC_training_set\\"
-label_file_address = input_address + "training_set_results.txt"
+input_address = os.path.join(os.path.join(os.pardir, os.pardir), os.path.join("input", "PTC"))
+train_address = os.path.join(input_address,"train")
+raw_train_labels_file_address = os.path.join(input_address,"train_set_results.txt")
+raw_test_labels_file_address = os.path.join(input_address,"test_set_results.txt")
 classes = {"CE":1, "SE":1, "P":1, "NE":0, "N":0, "EE":-1, "E":-1, "IS":-1}
 
 def mol_nodes_and_edges(mol_name, train_address):
-    full_mol_address = train_address + mol_name
+    full_mol_address = os.path.join(train_address, mol_name)
     f = open(full_mol_address,'r')
     f.readline()
     f.readline()
@@ -18,9 +18,9 @@ def mol_nodes_and_edges(mol_name, train_address):
 
 def copy_mols(classtype, label, train_address, mol_name):
     
-    full_mol_address = train_address + mol_name
-    positive_dest = train_address + classtype + "_positive"
-    negative_dest = train_address + classtype + "_negative"
+    full_mol_address = os.path.join(train_address, mol_name)
+    positive_dest = os.path.join(train_address, classtype + "_positive")
+    negative_dest = os.path.join(train_address, classtype + "_negative")
     try:
         os.makedirs(positive_dest)
         os.makedirs(negative_dest)
@@ -46,11 +46,13 @@ def select_small_molecules(label_file_address, train_address,
             classtype, label = elem.strip().split("=")
             if min_nodes <= node_num <= max_nodes and \
                 min_edges <= edge_num <= max_edges:
-                copy_mols(classtype, label, PTC_train_address, mol_name)
+                copy_mols(classtype, label, train_address, mol_name)
 
 def select_labels(test_address, label_file_address, grouptype="MR"):
     labels = []
     test_molecules = os.listdir(test_address)
+    test_molecules = [mol.rstrip(".sdf") for mol in test_molecules]
+    print test_molecules
     train_labels = open(label_file_address,'r')
     for line in train_labels:  
         elems = line.split(",")
@@ -68,8 +70,8 @@ def select_labels(test_address, label_file_address, grouptype="MR"):
 #             print mol_filename, full_file_name
 #             shutil.copy(full_file_name, dest)
 if __name__ == "__main__":
-#     select_small_molecules(label_file_address, PTC_train_address, 
-#                            min_nodes=5, min_edges=5,
-#                            max_nodes=20, max_edges=20)
-    print select_labels("C:\Users\User\Documents\eclipse_workspace\graphlet_lazy\input\PTC_sample_53x45x44\MR_test", 
-                  label_file_address, grouptype="MR")
+    select_small_molecules(raw_train_labels_file_address, train_address, 
+                           min_nodes=0, min_edges=0,
+                           max_nodes=2400, max_edges=2400)
+#     print select_labels("C:\Users\User\Documents\eclipse_workspace\graphlet_lazy\input\PTC_training_set\original", 
+#                   label_file_address, grouptype="MR")
