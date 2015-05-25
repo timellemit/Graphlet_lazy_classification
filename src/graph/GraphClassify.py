@@ -117,7 +117,7 @@ class GraphClassify:
                                      max_nodes=self.max_nodes, ptc=self.ptc,
                                      verbose=verbose)
         if fromfile:
-            train_set, test_set = \
+            train_set, test_set, _ = \
             parse_graphlet_descriptions(
                                 train_graphlet_filename, 
                                 test_graphlet_filename)
@@ -393,7 +393,7 @@ class GraphClassify:
                               train_graphlet_filename=train_graphlet_filename,
                               test_graphlet_filename=test_graphlet_filename,
                               verbose=verbose)  
-        train_labels = labels_to_array(train_labels_file) 
+#         train_labels = labels_to_array(train_labels_file) 
         pos_set, neg_set = train_set[:len(self.positive_cxt.table),:],\
         train_set[len(self.positive_cxt.table):,:]
         def binary_intersect(binary_desc1, binary_desc2):
@@ -452,7 +452,91 @@ class GraphClassify:
             return predicted, round(time() - init_time, 2)
         else:
             return predicted
+    
+    def lazy_graphlet_classify_with_neighbors(self, pos_dir, neg_dir, test_dir,
+                              descs_from_file=True,
+                              descs_to_file=False,
+                              train_graphlet_filename=None,
+                              test_graphlet_filename=None,
+                              similarity_threshold=0.3,
+                              verbose=True,
+                              output_time=True):
         
+        from sklearn.metrics import jaccard_similarity_score
+        init_time = time()
+        # Создание бинарных описаний обучающей и тестовой выборки, 
+        # а также парсинг меток тестовой выборки
+        # Параметр grouptype - половидовой признак (муж/жен, крысы/мыши)
+        train_set, test_set = \
+        self.graphlet_descriptions(test_dir=test_dir, 
+                              fromfile=descs_from_file,
+                              tofile=descs_to_file,
+                              train_graphlet_filename=train_graphlet_filename,
+                              test_graphlet_filename=test_graphlet_filename,
+                              verbose=verbose)  
+#         train_labels = labels_to_array(train_labels_file) 
+        pos_set, neg_set = train_set[:len(self.positive_cxt.table),:],\
+        train_set[len(self.positive_cxt.table):,:]
+
+        def binary_intersect(binary_desc1, binary_desc2):
+            res = []
+            for i in xrange(len(binary_desc1)):
+                if binary_desc1[i] == binary_desc2[i]:
+                    res.append(binary_desc1[i])
+                else:
+                    res.append(-1) 
+            return np.array(res)
+        
+        def inter_matches(inter, binary_desc):
+            for i in xrange(len(binary_desc)):
+                if binary_desc[i] != 1 and inter[i] == 1:
+                    return False  
+            return True
+        
+        def is_falsified(inter, object_set):
+            for obj in object_set:
+                if inter_matches(inter, obj):
+                    return True
+            return False
+        
+        predicted = []    
+        for test_ind in xrange(len(test_set)):
+            pos_votes, neg_votes = 0, 0
+            for pos_ind in xrange(len(pos_set)):
+                if jaccard_similarity_score(test_set[test_ind], pos_set[pos_ind]) >= similarity_threshold:
+                    inter = binary_intersect(test_set[test_ind], pos_set[pos_ind])
+                    if not is_falsified(inter, neg_set):
+                        if verbose:
+                            print "Intersection of test {0} and pos {1} not falsified".format(test_ind + 1, 
+                                                                                 pos_ind + 1)
+                        pos_votes += sum(inter == 1)
+    #                         pos_votes += 1
+            for neg_ind in xrange(len(neg_set)):
+                if jaccard_similarity_score(test_set[test_ind], pos_set[pos_ind]) >= similarity_threshold:
+                    inter = binary_intersect(test_set[test_ind], neg_set[neg_ind])
+                    if not is_falsified(inter, pos_set):
+                        if verbose:
+                            print "Intersection of test {0} and neg {1} not falsified".format(test_ind + 1, 
+                                                                                 neg_ind + 1)
+                        neg_votes += sum(inter == 1)
+    #                         neg_votes += 1
+            if pos_votes == neg_votes:
+                predicted.append(-1)
+            else:
+                predicted.append(int(pos_votes > neg_votes))
+            if verbose:
+                print "Score: {0}:{1}".format(pos_votes, neg_votes)
+#         if verbose:
+#             print "True: ", test_labels
+#             print "Predicted: ", predicted
+#             print(metrics.classification_report(test_labels, predicted))
+#             print(metrics.confusion_matrix(test_labels, predicted)) 
+#             print "lazy_graphlet_classify, time in sec: ", round(time() - init_time, 2)
+        if output_time:
+            return predicted, round(time() - init_time, 2)
+        else:
+            return predicted
+            
     def lazy_classify(self, test_cxt_file, use_graphlets=True,
                       min_nodes=3, max_nodes=3, 
                       weighted=False,

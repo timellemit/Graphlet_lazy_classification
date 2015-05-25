@@ -7,7 +7,7 @@ from parse_PTC_2001_data.parse_PTC_train_labels import select_labels
 # Полные адреса каталогов input, полож и отриц и тестовых примеров и их меток 
 input_address = os.path.join(os.path.join(os.pardir, os.pardir), "input")
 all_labels_filename = os.path.join(input_address,"training_set_results.txt")
-sample_adress = os.path.join(input_address, "PTC_sample_3x3x3")
+sample_adress = os.path.join(input_address, "PTC_sample_44x44x44")
 
 for grouptype in ['MR']:#, 'MM', 'FR', 'FM']:
     pos_dir = os.path.join(sample_adress, grouptype + "_positive")
@@ -36,33 +36,20 @@ for grouptype in ['MR']:#, 'MM', 'FR', 'FM']:
         label_file_address=all_labels_filename, 
         grouptype=grouptype)
     
-    lazy_pred =  molecules.lazy_graphlet_classify(test_dir, 
-                                                  all_labels_filename, 
-                grouptype=grouptype, 
+    
+    lazy_pred =  molecules.lazy_graphlet_classify_with_neighbors(
+                pos_dir=pos_dir, neg_dir=neg_dir, test_dir=test_dir, 
                 descs_from_file=True,
-                train_filename=train_filename,
-                test_filename=test_filename, 
-                train_labels_filename=train_labels_filename, 
-                test_labels_filename=test_labels_filename, 
+                train_graphlet_filename=train_filename,
+                test_graphlet_filename=test_filename, 
                 descs_to_file=False,
+                similarity_threshold=0.9,
                 verbose=True,
                 output_time=False)
     
-    svm_pred = molecules.svm_graphlet_classify(test_dir, all_labels_filename, 
-                    grouptype=grouptype, 
-                    descs_from_file=True,
-                    train_filename=train_filename,
-                    test_filename=test_filename, 
-                    train_labels_filename=train_labels_filename, 
-                    test_labels_filename=test_labels_filename, 
-                    descs_to_file=False,
-                    verbose=True,
-                    output_time=False)
+    
     
     print "True labels: \n", true_labels
     print "Lazy prediction: \n", lazy_pred
-    print "SVM prediction: \n", svm_pred
     print(metrics.classification_report(true_labels, lazy_pred))
     print(metrics.confusion_matrix(true_labels, lazy_pred)) 
-    print(metrics.classification_report(true_labels, svm_pred))
-    print(metrics.confusion_matrix(true_labels, svm_pred)) 
