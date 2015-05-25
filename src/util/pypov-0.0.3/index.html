@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>pypov: python for povray</title>
+</head>
+<body bgcolor="#ffffff">
+<a href="../../../index.html"><img src="../../../ATh.png" border=0 align=right></a><br>
+<h1>PyPov: python for povray</h1>
+Here is a relatively simple framework for making povray files from your favourite programming language, python. It's good for creating structured/mathematical scenes and animations.<br>
+<h3>Tutorial</h3>
+1) Some code snippets.<br>
+<pre>Sphere( (0,0,0), 1, color=(1,1,1) )</pre>
+<pre>Union( Sphere(v1,r), Sphere(v2,r) )</pre>
+2) To change/set named args:<br>
+<pre>
+torus = Torus( 4, 1 )
+torus.rotate = 90*x # x is actually a Vector instance </pre>
+And unnamed args via their index (untested):<br>
+<pre>torus[0] = 8 # bigger now </pre>
+3) Use the File object to output these to a pov file.<br>
+<pre>
+file = File( "out.pov" )
+torus.write(file)
+torus.rotate = 90 * x
+torus.write(file) # another torus </pre>
+Here is a complete example for a chain of spheres:
+<pre>
+def test04():
+  cam = Camera(
+    location=(0,0,-10),
+    look_at=(100.0,0.0,0.0),
+    angle=30 )
+  light = LightSource((300,300,-1000),(1,1,1))
+  spheres = [ Sphere( (2*i,0,0), 1, Pigment(color=(1,1,1)) )
+    for i in range(400) ]
+  file = File( "spheres.pov", cam, light, *spheres )
+</pre>
+Here is the pond:
+<pre>
+  water = Texture(
+      Finish(
+        ambient = 0.2,
+        diffuse = 0.3,
+        reflection = 0.8,
+        specular = 0.3
+      ), Pigment(color=(0.4,0.4,1)))
+  def field(x,y):
+    x-=0.5; y-=0.5;
+    return (1.0+sin(6.0*sqrt(x*x+y*y)*2*pi))/2.0
+  FieldIm("field.png",192,192,field)
+  hf = HeightField(
+    "field.png",
+    "smooth",
+    water,
+    translate=(-0.5,-0.5,-0.5),
+    scale=(24,1.75,24),
+  )
+</pre>
+<br>
+Check out test.py and pond.py for more examples.
+<br>
+<h3>Screenshot</h3>
+Here I am working on some fibonacci spirals.<br>
+<a href="bigshot.png"><img src="shot.png" border=0></a>
+<br>
+This is the pond (that I gaze into)...<br>
+<a href="bigpond.png"><img src="pond.png" border=0></a>
+<br>
+<h3>Downloads</h3>
+<a href="pypov-0.0.2.tar.gz">pypov-0.0.2.tar.gz</a>
+<br>
+<br>
+<hr>
+<br>
+Copyright (C) Simon Burton 2002, 2003.
+<br>
+<br>
+Last update: Jun 18, 2003
+<br>
+<br>
+<br>
+Mail comments, suggestions, to :
+<a href="mailto:simon@arrowtheory.com">simon@arrowtheory.com</a>
+<br>
+<br>
+</font>
+</body>
+</html>

@@ -1,0 +1,2 @@
+label all, name
+set valence, 0.1

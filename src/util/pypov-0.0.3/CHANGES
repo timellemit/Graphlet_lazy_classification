@@ -1,0 +1,8 @@
+
+0.0.2 (18 Jun 03)
+-----------------
++ support for triangle and mesh objects.
++ HeightField objects
++ FieldIm class 
+  uses PIL to create a height field image from a function
+

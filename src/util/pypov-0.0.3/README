@@ -1,0 +1,17 @@
+README
+------
+
+Povray.py : this has all the class definitions.
+test.py : examples, run with number as arg. eg "./test.py 21".
+
+index.html : some info
+MANIFEST
+README
+out : output directory
+
+render.py : a script to call povray
+
+The following scripts use pygame to display animations.
+display1.py : load one frame at a time
+display.py : keep all frames in memory
+

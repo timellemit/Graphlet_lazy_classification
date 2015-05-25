@@ -1,0 +1,35 @@
+@relation MR_sample
+@attribute 'Br-C-C' {1,0}
+@attribute 'Br-C-H' {1,0}
+@attribute 'C-C-C' {1,0}	
+@attribute 'C-C-H' {1,0}	
+@attribute 'Cl-C-C' {1,0}
+@attribute 'H-C-H' {1,0}
+@attribute 'Cl-C-H' {1,0}
+@attribute 'N-C-N' {1,0}
+@attribute 'N=C-N' {1,0}
+@attribute 'C-N-H' {1,0}
+@attribute 'H-N-H' {1,0}
+@attribute 'C=N-C' {1,0}
+@attribute 'O-C-C' {1,0}
+@attribute 'C-C-C-O (trian)' {1,0}
+@attribute 'O-C-H' {1,0}
+@attribute 'Na-O-C' {1,0}
+@attribute 'O-C=C' {1,0}
+@attribute 'C-C=C' {1,0}
+@attribute 'C=C-H' {1,0}
+@attribute 'O=C-C' {1,0}
+@attribute 'O=C-H' {1,0}
+@attribute 'Cl-C-Cl' {1,0}
+@attribute 'N-C=C' {1,0}
+@attribute 'N-C-C' {1,0}
+@attribute 'Cl-C=C' {1,0}
+@attribute 'H-O-C' {1,0}
+@attribute 'N=C-C' {1,0}
+@attribute 'N-C-H' {1,0}
+@attribute 'Class' { 'toxic', 'non-toxic'}
+@data
+1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'toxic'
+0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,'non-toxic'
+0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,1,0,0,'toxic'
+0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,'non-toxic'

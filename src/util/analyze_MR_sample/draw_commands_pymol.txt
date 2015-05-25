@@ -1,0 +1,3 @@
+label all, name
+set valence, 0.1
+set label_position, [1,1,1]
